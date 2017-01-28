@@ -354,7 +354,7 @@
 % can use linebreaks \\ within to get better formatting as desired
 \title{From intention to code review - 
 %How long does it take? 
-the valuable metrics. The case study of a cloud operating system.}
+the valuable metrics. The case study of a cloud infrastructure.}
 
 
 % author names and affiliations
@@ -448,30 +448,119 @@ code, review, process, metrics, software, engineering.
 \IEEEpeerreviewmaketitle
 
 
-
 \section{Introduction}
+
+Software development process is characterized by a sequence 
+%nderthurje  
+of different activities, with the intent of better planning and management. 
+Some of the activities depend on technical factors, while others are merely organizational 
+and administering issue dependent.
+\\
+In one of the phases of software development, at some point, the implementation of features starts. 
+Consequently, when during the testing phase errors are found, 
+developers proceed to triage the bugs. Finally, depending on the result of this activity,
+a review of that chunk of code containing that bug may start. 
+\\
+This process ends when the code with the bug fixed runs into the code base of the project, and whoever might be 
+waiting takes dependency on the new code.
+\\
+In this paper we take into consideration and analyse exactly the span of time that extends 
+from finding the errors up to when the 
+new code, with the errors fixed, runs into the code base. We will call this span the time from \textbf{I}ntention to 
+\textbf{C}ode \textbf{R}eview and will refer to it as \textbf{ICR} in the remaining of the paper.    
+\\
+The ICR process encloses a collection of metrics 
+which can be used to improve the software development process.
+These software metrics can be grouped in two distinct classes: relative and absolute.
+While relative metrics are a representation of an attribute which can not be directly 
+measured and rely on the context where the metric was derived, 
+absolute metrics are numerical values which describe a trait of the code that do not 
+involve subjective context but are only material fact.
+\\
+With former code inspection, many of this metrics could not be measured, but today, with the 
+modern systems, we can trace the information needed to analyse them. 
+\\ 
+The final purpose of this study is to bring into focus two absolute metrics from ICR process: 
+\emph{time spent for bug triaging} (\textbf{BTT})  and \emph{time spend to review the code} (\textbf{CRT}).
+\\
+We are going to quantify the duration of the ICR process and measure both BTT and CRT 
+metrics of the projects we selected as our case study. These measures will 
+conceptually help us to proportion the size that BTT and CRT have on ICR, 
+consequently the relations between the metrics and the process.
+\\
+Our proposal is that the two metrics, BTT and CRT, are very important for different reasons. 
+First, through them we can better characterise the ICR process. 
+Second and most important, if supervising these two metrics, we believe that 
+the code review process can significantly improve.
+\\
+With the abundance of data and having a diverse set of projects to observe,
+our selected case study is OpenStack, the cloud computing infrastructure. 
+We are performing a large empirical study on its more than 200 active projects.
+\\
+Actually considered the future of cloud, 
+our choice is OpenStack because it is a large project that has adopted code
+reviews on a large scale. Using modern software systems, it has a reasonable traceability 
+of information of its software development process.
+\\
+OpenStack uses Launchpad, a bugtracking system for tracking
+the issue reports, and Gerrit, a lightweight code review tool. 
+Additionally, being an open source project, it is backed by a global collaboration
+of developers.
+\\
+Besides OpenStack, code review is applied on a varied array of software projects. 
+These projects have highly different settings, incentive structures and schemes, 
+time pressures, and cultures.
+\\
+In an effort to characterize and understand these differences, previous studies~(\cite{bib01,bib02,bib03}) 
+have examined open and non open source projects like Android OS, Chromium OS, Bing, Office, MS SQL, 
+and projects internal to AMD. 
+\\
+They analysed how time to carry out the review process varies in these different projects. 
+Some conclusions found that the practice of code review is slowing down the code integration activity. 
+They found that in some cases not only the bug triaging is taking too long, but also that the median time 
+for code review is days long, if not weeks.
+\\
+In line with the previous studies, we compared our findings on CRT with the results obtained for this 
+metric from these studies.
+Looking at the results, our main assumption is that if some of the code review metrics in different projects have become 
+similar as the projects have normally advanced, then such metrics may be indicative of practices 
+that may represent commonly successful and efficient methods of review.
+\\
+As such, these can be prescriptive to other projects taking into consideration to add code 
+review to their development process.
+\\
+\\
+In the remainder of this paper, we first describe some previous work on the topic (section II) and 
+the background of the case study (section III). Next we detail the methodology (section IV). After  
+describing the analysis (Section V) and displaying results (section VI), we discuss the conclusion and future work 
+(section VII).
+%
+%
+
+
+\section{Previous Work}
 % no \IEEEPARstart
 
 The purpose of code review is to find and fix the source code defects that can cause vulnerabilities 
 and thus give rise to an exploit. Code review is characterized as \emph{``a systematic approach to examine 
 a product in detail, using a predefined sequence of steps to determine if the product is fit for its
-intended use''}~\cite{bib1}.
+intended use''}~\cite{bib04}.
 \\
-The formal review or inspection according to Fagan's approach~\cite{bib2}, introduced 40 years ago, 
+The formal review or inspection according to Fagan's approach~\cite{bib05}, introduced 40 years ago, 
 required the conduction of an inspection meeting for in fact finding defects.
 There have been different ways of performing defect detection during these 40 years, from meeting based 
 to meetingless based inspections. 
 \\
 Several experiments proved that no significant differences were found in the outcome between 
-meeting and meetingless based inspections of the review process~(\cite{bib3,bib4}).
-Another experiment~\cite{bib5} proved that time for conducting the review process significantly 
+meeting and meetingless based inspections of the review process~(\cite{bib06,bib07}).
+Another experiment~\cite{bib08} proved that time for conducting the review process significantly 
 improved with meetingless based approaches.
 \\
 As a result, a considerate number of mechanisms and techniques were developed to code review, which 
 results nowadays in the modern and ligh-weight code review process.
-From the tool based static analysis~(\cite{bib6,bib7,bib8}) which examines the code in the absence
+From the tool based static analysis~(\cite{bib09,bib010,bib011}) which examines the code in the absence
 of input data and without running the code, to the widely
-adopted modern code review~(\cite{bib9,bib10,bib11}) which, aligning with
+adopted modern code review~(\cite{bib012,bib013,bib014}) which, aligning with
 the distributed nature of many projects, is asynchronous and
 frequently supporting geographically distributed reviewers.
 \\
@@ -479,49 +568,61 @@ Today, as a consequence of the many benefits, code review is a standard process 
 engineering workflow.
 It is generally accepted that the performance of code review is associated with the effort spent to carry 
 it out and is influenced by a range of factors, some of which are external to the technical aspects of 
-the process~\cite{bib12}.
+the process~\cite{bib015}.
+\\
+In the practical guide to code review, Wiegers denotes that \emph{in formal inspection 
+process the similarities outweigh their differences}~\cite{bib016}.
+Furthermore, in their study on convergent practices to modern code review, Rigby and Bird 
+compared parameters of review, such as review interval and the number of comments in 
+review discussions. They also found that \emph{while there were some minor divergences in contemporary
+practice, the findings converged}~\cite{bib01}, bringing them to conclude that even in modern code review 
+the \emph{similarities outweigh their differences}. 
 
 
-\section{Purpose}
+\section{Case Study Background}
 
-Code review process encloses a collection of metrics 
-which can be used to improve the software development process.
-These software metrics can be grouped in two distinct classes: relative and absolute.
-While relative metrics are a representation of an attribute which can not be directly 
-measured, are subjective and rely on the context where the metric was derived, 
-absolute metrics are numerical values which describe a trait of the code that do not 
-involve subjective context but are only material fact.
+This section provides background information about OpenStack and the tools used for 
+obtaining data from its repositories.
 \\
-Thus, the purpose of this study is to bring into focus two absolute metrics of the code 
-review process: the time spent for bug triaging and the time spend to
-review the code. Our proposal 
-is that these two metrics are very important for different reasons. 
-First, through them we can better characterise the code review process. 
-Second and most important, through the supervising of these two metrics, we are sure that 
-the code review process can significantly improve.
+OpenStack is an open source set of software tools for building and
+managing cloud computing platforms. Its community has
+collaboratively identified 9 key components as the core part of OpenStack. 
+Additional components are add to OpenStack from partners with the purpose 
+of helping them to meet their needs. This is why, actually, in
+OpenStack there are more than 200 active projects.
 \\
-Code review is applied on a varied array of software projects. These projects have highly different 
-settings, incentive structures and schemes, time pressures, and cultures.
+OpenStack uses Launchpad as its issue tracking system. It is a repository
+that enables users and developers to report \emph{defects} and \emph{feature} requests.
 \\
-In an effort to characterize and understand these differences, previous studies~(\cite{bib13,bib14,bib18}) 
-have examined open and non open source projects like Android OS, Chromium OS, Bing, Office, MS SQL, 
-and projects internal to AMD. 
-They have analysed how the time to carry out the review process varies in these different projects. 
-Some conclusions found that the practice of code review is slowing down the code integration activity. 
-They found that in some cases not only the bug triaging is taking too long, but also that the median time 
-for code review is days long, if not weeks.
+Once a \emph{defect} (or issue) is reported, developers move to triage it. If it is deemed important, 
+the issue is assigned to team members. Launchpad records the discussions that happen 
+with any interested team member and track the history of all work on the issue. 
+During these issue discussions, team members can ask questions, share their opinions 
+and help other team members.
 \\
-We analysed the large, geographically distributed, open source cloud computing project of OpenStack, which actually contains more 
-than 200 active projects.
-We contrast our findings on the time to review with the data obtained from the previous studies of 
-this metric.
-Looking at the results, our main assumption is that if some of the code review metrics in different projects have become 
-similar as the projects have normally advanced, then such metrics may be indicative of practices 
-that may represent commonly successful and efficient methods of review.
-And as such, these can be prescriptive to other projects taking into consideration to add code 
-review to their development process.
-%
-%
+\emph{Features} are also registered in Launchpad. 
+First features are splitted in a list of working items called \emph{specifications} and then 
+implemented.
+But Launchpad is missing some functions that would make iterating on specifications design and approval usable, 
+like ability to discuss or iterate on several revisions of a specification, or record multiple approvals. 
+Thus some projects decided to experiment with using a specific git repository (\emph{*-specs}) to propose, discuss, 
+iterate and track approvals on specifications using Gerrit instead of Launchpad. 
+Those projects still ultimately use Launchpad once the specification is approved, 
+to track the implementation status of the approved feature. 
+\\
+OpenStack uses a dedicated reviewing environment, Gerrit, to implement features, review patches
+and bug fixes. It supports lightweight processes for reviewing code changes,
+i.e., to decide whether a developer’s change is safe to integrate into the official
+Version Control System (VCS). During this process, assigned reviewers make
+comments on a code change or ask questions that can lead to a discussion of
+the change and/or different revisions of the code change, before a final decision
+is made about the code change. If accepted, the most recent revision of the
+code change can enter the VCS, otherwise the change is abandoned and the
+developer will move on to something else \cite{bib017}.
+\\
+To obtain the issue reports and code review data of these ecosystems, we
+used the MetricsGrimoire toolset \cite{bib018} provided by Bitergia to mine the repositories of OpenStack, 
+then store the corresponding data into a relational database.
 
 %\subsubsection{Methodology}
 \section{Methodology}
@@ -533,9 +634,7 @@ a report describing a possible bug is opened,
 up to the moment the fix, for that bug, runs in the code base of the project.
 \\
 In order to achieve this, we first extracted the code review process 
-information from the datasources. OpenStack uses Launchpad as its 
-issue tracking system, and Gerrit as its 
-code review repository.
+information from Launchpad and Gerrit.
 \\
 We then preprocessed the data, identified the attributes for
 measuring the metrics, and finally performed our analysis.
@@ -550,10 +649,10 @@ studies and draw our results.
 
 \subsection{Data Extraction and Preprocessing}
 
-In our previous work~(\cite{bib16,bib17}), we have described the extraction process and the 
+In our previous work~(\cite{bib019,bib020}), we have described the extraction process and the 
 resulting dataset for both Launchpad\footnote{activity.openstack.org/dash/browser/data/db/tickets.mysql.7z} 
 and Gerrit\footnote{activity.openstack.org/dash/browser/data/db/reviews.mysql.7z} repositories, 
-using the Metrics Grimoire~\cite{bib20} toolset. 
+using the Metrics Grimoire~\cite{bib018} toolset. 
 The data is also available for other researchers to use. 
 %Remember to reference the paper from SOMET
 %This first of these works did not involve the 
@@ -641,16 +740,16 @@ in Gerrit up to when a fix is merged to the code base (master branch of the proj
 
 \section{Analysis}
 
-In this section we expose the results that were obtained from the analysis 
-of the OpenStack project for both metrics: bug triaging time and review time. 
-Our purpose usefulness was discussed in section II.
-\\
+In this section we display the results that were obtained from the analysis 
+of OpenStack project for both metrics: bug triaging time and review time. 
+Our purpose usefulness was discussed in section I.
+\\ \\
 % MAYBE move this to purpose section
 The researchers community is continuously gaining interest in those two metrics, 
-analysing them in different experiments (for example~\cite{bib13,bib14,bib16,bib18,bib19} etc). 
-But while there are studies that have quantified time to review~\cite{bib13,bib14}, at the best 
+analysing them in different experiments (for example~\cite{bib01,bib02,bib03,bib019,bib021} etc). 
+But while there are studies that have quantified time to review~\cite{bib01,bib02}, at the best 
 of our knowledge still no study has done the same for bug triaging.
-\\
+\\ \\
 Despite this, more and more attention is directed at understanding the impact that bug triaging 
 has on the overall review process and to what factors influence this activity.
 \\ %
@@ -658,41 +757,46 @@ has on the overall review process and to what factors influence this activity.
 On one hand the industries put a lot of effort in individuating and fixing 
 defects injected by development. But on the other hand they need the review to be short, 
 because a long lasting process usually is not that effective. 
-\\
+\\ \\
 A long review may generate process stalls and affects whoever might be waiting to take 
 a dependency on the new code.
 Additionally, the longer the review time is, the more complicated is for the author to move back to 
 the change and integrate the feedback of the reviewers without potentially introducing new defects. 
-\\
+\\ \\
 This is why, in this context, we underline the importance of maintaining the process time as 
 controlled as possible. And the two most important elements influencing this time are precisely 
 bug triaging and review time. By supervising these metrics the review process time can be as 
 short or long as according to the case. 
 \\ %
-In order to show our assumption we first analysed the span of time from Intention to Code Review (\textbf{ICR}), 
-then extracted the two metrics: Bug Triaging Time (\textbf{BTT}) and Code Review Time (\textbf{CRT}), to better 
+\\
+In order to show our assumption we first analysed the ICR process, 
+then extracted the two metrics of BTT and CRT, with the purpose to better 
 understand the inlfuence that these metrics have on ICR.
 \\
+\\
 The data we are analysing from OpenStack, comprises all the historical span from 2010 to January 2017. 
-As we mentioned in section III, in this overall history, 83.254 tickets were classified as bugs. 
+As we mentioned in section IV, in this overall history, 83.254 tickets were classified as bugs. 
 For our analysis, we are considering 
 only the fixed bugs, which change has been merged into the code base, thus excluding the reviews still in 
 progress, abandoned and duplicated issues. 
+\\
 \\Therefore, the total number of tickets we have analysed is 59.209, which is approximately 71\% of the total 
 number of identified bugs. 
 
 \section{Results}
-We computed the three measures from Intention to Code Review (\textbf{ICR}), Bug Triaging Time (\textbf{BTT}) 
-and Code Review Time (\textbf{CRT}) as the following: 
+We computed the three measures from Intention to Code Review (ICR), Bug Triaging Time (BTT) 
+and Code Review Time (CRT) as the following: 
 \\
-\textbf{ICR} - the time from when the ticket is opened in the issue tracking system, to 
+\\
+\emph{ICR} - the time from when the ticket is opened in the issue tracking system, to 
 when the fix for the bug is merged into the code base;
 \\
-\textbf{BTT} - the time from the moment when the ticket is opened in
+\emph{BTT} - the time from the moment when the ticket is opened in
 Launchpad up to the moment it is \emph{Confirmed} as a genuine bug.
 \\
-\textbf{CRT} - the time from when the first patch is uploaded in Gerrit up to when the 
+\emph{CRT} - the time from when the first patch is uploaded in Gerrit up to when the 
 change is merged to the code base.
+\\
 \\
 Afterwards, we calculated the median effect size across all Open Stack projects history 
 in order to globally rank the metrics from most extreme effect size.
@@ -717,7 +821,7 @@ number of days. The results in both Fig. \ref{fig:1} and Fig. \ref{fig:2} are me
 \begin{figure}[H]
 \centering
 
-\includegraphics[width=0.50\textwidth,natwidth=462,natheight=120]{wetsom1.png}
+\includegraphics[width=0.45\textwidth,natwidth=397,natheight=96]{wetsom1.png}
 
 \caption{The quantiles for BTT, TTR and ICR measured in days.}
 \label{fig:1}
@@ -726,23 +830,24 @@ number of days. The results in both Fig. \ref{fig:1} and Fig. \ref{fig:2} are me
 \begin{figure}[H]
 \centering
 
-\includegraphics[width=0.50\textwidth,natwidth=462,natheight=282]{wetsom2.png}
+\includegraphics[width=0.45\textwidth,natwidth=462,natheight=282]{wetsom2.png}
 
 \caption{Chart of the quantiles for BTT, TTR and ICR measured in days.}
 \label{fig:2}
 \end{figure}
 
-\section{Conclusions}
+\section{Conclusions and Future Work}
 
-In the practical guide to code review, Wiegers denotes that \emph{in formal inspection 
-process the similarities outweigh their differences}~\cite{bib21}.
-Furthermore, in their study on convergent practices to modern code review, Rigby and Bird 
-compared parameters of review, such as review interval and the number of comments in 
-review discussions. They also found that \emph{while there were some minor divergences in contemporary
-practice, the findings converged}~\cite{bib13}, bringing them to conclude that even in modern code review 
-the \emph{similarities outweigh their differences}.  
+%In the practical guide to code review, Wiegers denotes that \emph{in formal inspection 
+%process the similarities outweigh their differences}~\cite{bib21}.
+%Furthermore, in their study on convergent practices to modern code review, Rigby and Bird 
+%compared parameters of review, such as review interval and the number of comments in 
+%review discussions. They also found that \emph{while there were some minor divergences in contemporary
+%practice, the findings converged}~\cite{bib13}, bringing them to conclude that even in modern code review 
+%the \emph{similarities outweigh their differences}.  
+
 As previously mentioned, related the results obtained from our analysis with 
-that of the previous studies~\cite{bib13,bib22}, 
+that of the previous studies~\cite{bib01,bib022}, 
 in an effort to characterize and understand the differences. These
 studies have analysed the review process for some of
 the AMD, Microsoft, and Google-led projects. The results from these studies 
@@ -772,7 +877,7 @@ and the number of reviews.
 \end{figure}
 
 The TTR metric has been studied in a number of experiments over the
-last 40 years~(\cite{bib2,bib18,bib23}). 
+last 40 years~(\cite{bib05,bib03,bib023}). 
 Our contribution here is to add the large cloud computing project, such as OpenStack, 
 to the existing diverse set of projects analysed on this parameter.
 \\
@@ -786,13 +891,14 @@ practices that may represent commonly successful and efficient
 methods of review.
 \\
 The only measure we have, at the best of our knowledge, for the BTT metric are some indications 
-provided by \cite{bib18} and \cite{bib24}, two experiments respectively conducted with the support 
+provided by \cite{bib024} and \cite{bib025}, two experiments respectively conducted with the support 
 data from Microsoft and Bugzilla. They found that 
 \emph{bug triage takes up a large amount of developers resources and it goes from about 24 hours to 
 many lasting days, if not weeks}. Our contribution here is to bring some numbers on how long this process 
 takes in a large cloud computing project, such as OpenStack.
 
-The final purpose of this paper is to highlight the two metrics TTR and BTT, and recognize them as key metrics to 
+The final purpose of this paper is to highlight, from the ICR process, the two metrics of BTT and TTR, 
+and recognize them as key metrics to 
 supervise during the review process. You can't control what you can't measure.
 And by controlling these metrics, not only the effectiveness of code review can be quantified and the progress of 
 a development team can be measured, but also policies and guidelines, which can improve the development process, 
@@ -805,6 +911,18 @@ and \ref{fig:2}) becomes of vital importance. Not only the quality of the code u
 but also the time waiting to take possesion of the new code must be relatively as short as possible. 
 Thus controlling ICR, and the parameters that affect it, including here BTT and TTR, becomes crucial to the success of 
 a project itself.
+\\
+\\
+Taking into consideration the above discussion, our future work is to continue analysing 
+(along with ICR, BTT and TTR) more phases 
+from the software development process. We highlight the fact that also the feature implementation follows the 
+same workflow in Gerrit. 
+\\Thus, our work will be aimed at characterizing various phases highlighting those parameters that 
+influence the performance of the process, and define what factors influence the paramenters itself.
+The purpose of our work is raising specific metrics as key performance indicators (KPIs). 
+They will be KPIs that when controled are able to improve the software development process 
+either by discovering software development policies or guidelines, and by setting configurations of 
+a development team. 
  
 
 
@@ -936,78 +1054,15 @@ extraction of the dataset used in this paper.
 % (used to reserve space for the reference number labels box)
 \begin{thebibliography}{1}
 
-\bibitem{bib1}
-D.~L.~Parnas and M.~Lawford. \emph{Inspection’s role in
-software quality assurance.} In Software, IEEE, vol.
-20, 2003.
 
-\bibitem{bib2}
-M.~E.~Fagan. \emph{Design and Code inspections to reduce
-errors in program development.} In IBM Systems
-Journal 15 pp. 182-211, 1976.
-
-\bibitem{bib3}
-P.~M.~Johnson, and D.~Tjahjono. \emph{Does Every
-Inspection Really Need a Meeting?} In Empirical
-Software Engineering, vol. 3, no. 1, pp. 9-35, 1998.
-
-\bibitem{bib4}
-P.~McCarthy, A.~Porter, H.~Siy et al. \emph{An experiment
-to assess cost-benefits of inspection meetings and
-their alternatives: a pilot study.} In Proceedings of the
-3rd International Symposium on Software Metrics:
-From Measurement to Empirical Results, 1996.
-
-\bibitem{bib5}
-A.~Porter, H.~Siy, C.~A. Toman et al. \emph{An experiment
-to assess the cost-benefits of code inspections in large
-scale software development.} In SIGSOFT Softw. Eng.
-Notes, vol. 20, no. 4, pp. 92-103, 1995.
-
-\bibitem{bib6}
-W.~R.~Bush, J.~D.~Pincus, D.~J.~Sielaff. \emph{A static
-analyzer for finding dynamic programming errors.}
-Softw. Pract. Exper. , vol. 30, no. 7, pp. 775-802,
-2000.
-
-\bibitem{bib7}
-Hallem, D.~Park, and D.~Engler. \emph{Uprooting software
-defects at the source.} Queue, vol. 1, no. 8, pp. 64-71,
-2003.
-
-\bibitem{bib8}
-B.~Chess and J.~West. \emph{Secure Programming with
-Static Analysis.} 1st ed. Addison-Wesley Professional,
-Jul. 2007.
-
-\bibitem{bib9}
-N.~Kennedy. \emph{How google does web-based code reviews
-with mondrian.} http://www.test.org/doe/, Dec. 2006.
-
-\bibitem{bib10}
-A.~Tsotsis. \emph{Meet phabricator, the witty code review
-tool built inside facebook.}
-http://techcrunch.com/2011/08/07/oh-what-noble-
-scribe-hath- penned-these-words/, Aug.
-2006.
-
-\bibitem{bib11}
-Gerrit code review - https://www.gerritcodereview.com/.
-
-\bibitem{bib12}
-Baysal,~O., Kononenko,~O., Holmes,~R., Godfrey,~M.~W. 
-(2015). \emph{Investigating technical and non-technical 
-factors influencing modern code review.} Empirical
-Software Engineering, 1-28.
-
-\bibitem{bib13}
+\bibitem{bib01}
 Peter~C.~Rigby and Christian~Bird. 2013. \emph{Convergent
 contemporary software peer review practices.} In
 Proceedings of the 2013 9th Joint Meeting on
 Foundations of Software Engineering
 (ESEC/FSE2013). ACM, New York, NY, USA, 202-212.
 
-\bibitem{bib14}
+\bibitem{bib02}
 Amiangshu~Bosu and Jeffrey~Carver. 2013. \emph{Impact of
 Peer Code Review on Peer Impression Formation: A
 Survey.} Proceedings of the 7th ACM/IEEE
@@ -1015,21 +1070,100 @@ International Symposium on Empirical Software
 Engineering and Measurement (ESEM), 2013.
 Baltimore, MD, USA, 133-142.
 
-\bibitem{bib18}
-Czerwonka~Jacek, Michaela~Greiler and Jack~Tilford.
-\emph{Code Reviews Do Not Find Bugs. How the Current
-Code Review Best Practice Slows Us Down.}
-Proceedings of the 2015 International Conference on
-Software Engineering. IEEE Publisher, 2015.
+\bibitem{bib03}
+A.~Porter, H.~Siy, A.~Mockus, and L.~Votta.
+\emph{Understanding the sources of variation in software
+inspections.} ACM Transactions Software Engineering
+Methodology, 7(1):4 1-79, 1.
 
-\bibitem{bib16}
+
+\bibitem{bib04}
+D.~L.~Parnas and M.~Lawford. \emph{Inspection’s role in
+software quality assurance.} In Software, IEEE, vol.
+20, 2003.
+
+\bibitem{bib05}
+M.~E.~Fagan. \emph{Design and Code inspections to reduce
+errors in program development.} In IBM Systems
+Journal 15 pp. 182-211, 1976.
+
+\bibitem{bib06}
+P.~M.~Johnson, and D.~Tjahjono. \emph{Does Every
+Inspection Really Need a Meeting?} In Empirical
+Software Engineering, vol. 3, no. 1, pp. 9-35, 1998.
+
+\bibitem{bib07}
+P.~McCarthy, A.~Porter, H.~Siy et al. \emph{An experiment
+to assess cost-benefits of inspection meetings and
+their alternatives: a pilot study.} In Proceedings of the
+3rd International Symposium on Software Metrics:
+From Measurement to Empirical Results, 1996.
+
+\bibitem{bib08}
+A.~Porter, H.~Siy, C.~A. Toman et al. \emph{An experiment
+to assess the cost-benefits of code inspections in large
+scale software development.} In SIGSOFT Softw. Eng.
+Notes, vol. 20, no. 4, pp. 92-103, 1995.
+
+\bibitem{bib09}
+W.~R.~Bush, J.~D.~Pincus, D.~J.~Sielaff. \emph{A static
+analyzer for finding dynamic programming errors.}
+Softw. Pract. Exper. , vol. 30, no. 7, pp. 775-802,
+2000.
+
+\bibitem{bib010}
+Hallem, D.~Park, and D.~Engler. \emph{Uprooting software
+defects at the source.} Queue, vol. 1, no. 8, pp. 64-71,
+2003.
+
+\bibitem{bib011}
+B.~Chess and J.~West. \emph{Secure Programming with
+Static Analysis.} 1st ed. Addison-Wesley Professional,
+Jul. 2007.
+
+\bibitem{bib012}
+N.~Kennedy. \emph{How google does web-based code reviews
+with mondrian.} http://www.test.org/doe/, Dec. 2006.
+
+\bibitem{bib013}
+A.~Tsotsis. \emph{Meet phabricator, the witty code review
+tool built inside facebook.}
+http://techcrunch.com/2011/08/07/oh-what-noble-
+scribe-hath- penned-these-words/, Aug.
+2006.
+
+\bibitem{bib014}
+Gerrit code review - https://www.gerritcodereview.com/.
+
+\bibitem{bib015}
+Baysal,~O., Kononenko,~O., Holmes,~R., Godfrey,~M.~W. 
+(2015). \emph{Investigating technical and non-technical 
+factors influencing modern code review.} Empirical
+Software Engineering, 1-28.
+
+\bibitem{bib016}
+K.~E.~Wiegers. \emph{Peer Reviews in Software: A Practical 
+Guide. Addison-Wesley Information Technology Series.} 
+Addison-Wesley, 2001.
+
+\bibitem{bib017}
+http://docs.openstack.org/infra/manual/developers.html
+
+\bibitem{bib018}
+J.~M.~Gonzalez-Barahona, G.~Robles, and D.~Izquierdo-Cortazar. 
+\emph{The metricsgrimoire database
+collection.} In 12th Working Conference on Mining
+Software Repositories (MSR), pages 478-481, May
+2015.
+
+\bibitem{bib019}
 Dorealda~Dalipaj. \emph{A quantitative analysis of
 performance in the key parameter in code review -
 Individuation of defects.} Proceedings of the Doctoral Consortium at the 12th 
 International Conference on Open Source Systems (OSS) 2016, Gothenburg, Sweden, 
 11-24.
 
-\bibitem{bib17}
+\bibitem{bib020}
 Dorealda~Dalipaj, Jesus M. Gonzalez-Barahona, Daniel Izquierdo-Cortazar.
 \emph{Software engineering artifact in software development process – 
 Linkage between issues and code review processes.}
@@ -1037,45 +1171,34 @@ Proceedings of the 15th International Conference on New Trends
 in Intelligent Software Methodology Tools and Techniques (SoMeT) 2016, 
 Larnaca, Cyprus, 115-122.
 
-\bibitem{bib20}
-J.~M.~Gonzalez-Barahona, G.~Robles, and D.~Izquierdo-Cortazar. 
-\emph{The metricsgrimoire database
-collection.} In 12th Working Conference on Mining
-Software Repositories (MSR), pages 478-481, May
-2015.
-
-\bibitem{bib18}
-A.~Porter, H.~Siy, A.~Mockus, and L.~Votta.
-\emph{Understanding the sources of variation in software
-inspections.} ACM Transactions Software Engineering
-Methodology, 7(1):4 1-79, 1.
-
-\bibitem{bib19}
+\bibitem{bib021}
 P.~C.~Rigby, D.~M.~German, and M.A.~Storey. \emph{Open
 source software peer review practices: A case study of
 the apache server.} In ICSE: Proceedings of the 30th
 international conference on Software Engineering,
 pages 541-550, 2008.
 
-\bibitem{bib21}
-K.~E.~Wiegers. \emph{Peer Reviews in Software: A Practical 
-Guide. Addison-Wesley Information Technology Series.} 
-Addison-Wesley, 2001.
-
-\bibitem{bib22}
+\bibitem{bib022}
 P.~C.~Rigby. Understanding Open Source Software Peer 
 Review: Review Processes, Parameters and Statistical 
 Models, and Underlying Behaviours and Mechanisms. 
 http://hdl.handle.net/1828/3258. University of Victoria, 
 Canada, Dissertation, 2011.
 
-\bibitem{bib23}
+\bibitem{bib023}
 P.~C.~Rigby, D.~M.~German, and  M.~A.~Storey. \emph{Open
 source software peer review practices: A case study of the apache server.} 
 In ICSE: Proceedings of the 30th international conference on Software Engineering, 
-pag. 541–550, 2008.  
+pag. 541–550, 2008.
 
-\bibitem{bib24}
+\bibitem{bib024}
+Czerwonka~Jacek, Michaela~Greiler and Jack~Tilford.
+\emph{Code Reviews Do Not Find Bugs. How the Current
+Code Review Best Practice Slows Us Down.}
+Proceedings of the 2015 International Conference on
+Software Engineering. IEEE Publisher, 2015.  
+
+\bibitem{bib025}
 Tao~Zhang, Byungjeong~Lee. \emph{A Bug Rule Based Technique with Feedback for 
 Classifying Bug Reports.} Computer and Information Technology (CIT), 2011, 
 IEEE 11th International Conference, pp 336-343.
